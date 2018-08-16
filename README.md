@@ -1,4 +1,4 @@
-# detecting-bots
+# bot.detector() Version 1.1
 This is a function designed for Qualtrics surveys to detect responses that may be from bots and survey-farmers.
 This function creates a vector that you can save as a new column in your dataset that assignes a "score" to each response. 
 The score is intended to count the number of features in each response that are associated with bots and survey-farmers. 
