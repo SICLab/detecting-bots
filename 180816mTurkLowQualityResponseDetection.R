@@ -21,13 +21,12 @@
   # Comments consisting solely of phrases typically attributed to bots/duplicate responses/survey farmers adds 1 point. (Send new suggestions for phrases to jprims2@uic.edu.)
   # Duplicate comments that other respondants have already made in response to the same question add 1 point. 
     # Max score for only latitude and longitude: 1
-    # Max score for latitude, longitude, and one free-response: 3
-    # Max score for latitude, longitude, and two free-responses: 5
-    # Max score for latitude, longitude, and three free-responses: 7
+    # Max score for latitude, longitude, and one free-response: 4
+    # Max score for latitude, longitude, and two free-responses: 6
+    # Max score for latitude, longitude, and three free-responses: 8
 
 
 bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Comments2, Comments3){
-  
   
   # This creates a new column to store our bot suspicion score. 
   bot.susp <- rep(NA, length(Latitude))
@@ -50,8 +49,8 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
       # Adds a 1 to the bot suspicion column if the coordinates appear in more than 1% of the sample
       bot.susp <- ifelse(latlong %in% llmany, 1,  0)
   
-  # Now, let's check if their free response contains "good" or "NICE!"
-    suswords <- c("good","NICE!")
+  # Now, let's check if their free response consists only of "good" or "NICE!"
+    suswords <- c("good","NICE!", "very")
   
   # Check if person specified a free-response. If so, run. 
       if(missing(Comments)) {
@@ -63,7 +62,11 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
         bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        bot.susp <- ifelse(duplicated(Comments), bot.susp + 1, bot.susp)
+        bot.susp <- ifelse(duplicated(Comments), ifelse(is.na(Comments), bot.susp, bot.susp +1), bot.susp)
+        
+        # Now, looking for the presence of the word "very." 
+        bot.susp <- ifelse(grepl("very", Comments), bot.susp + 1, bot.susp)
+        
       }
   
   # Check if person specified second free-response. If so, run. 
@@ -76,7 +79,11 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
         bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        bot.susp <- ifelse(duplicated(Comments2), bot.susp + 1, bot.susp)
+        bot.susp <- ifelse(duplicated(Comments2), ifelse(is.na(Comments2), bot.susp, bot.susp +1), bot.susp)
+        
+        # Now, looking for the presence of the word "very." 
+        bot.susp <- ifelse(grepl("very", Comments2), bot.susp + 1, bot.susp)
+        
       }
   
   # Check if person specified third free-response. If so, run. 
@@ -89,10 +96,14 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
         bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        bot.susp <- ifelse(duplicated(Comments3), bot.susp + 1, bot.susp)
+        bot.susp <- ifelse(duplicated(Comments3), ifelse(is.na(Comments3), bot.susp, bot.susp +1), bot.susp)
+        
+        # Now, looking for the presence of the word "very." 
+        bot.susp <- ifelse(grepl("very", Comments3), bot.susp + 1, bot.susp)
       }
-  
+      
   # Outputting results
   return(bot.susp)
   
 }
+
