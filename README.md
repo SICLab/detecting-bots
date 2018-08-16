@@ -1,4 +1,4 @@
-# bot.detector() Version 1.1
+# bot.detector() Version 1.2
 This is a function designed for Qualtrics surveys to detect responses that may be from bots and survey-farmers.
 This function creates a vector that you can save as a new column in your dataset that assignes a "score" to each response. 
 The score is intended to count the number of features in each response that are associated with bots and survey-farmers. 
@@ -27,8 +27,9 @@ Scoring:
   Having a latitude and longitude that appears in more than the specified threshold adds 1 point. (Default threshold is .01.)
   Comments consisting solely of phrases typically attributed to bots/duplicate responses/survey farmers adds 1 point. (Send new suggestions for phrases to jprims2@uic.edu.)
   Duplicate comments that other respondants have already made in response to the same question add 1 point. 
+  Comments containing the word "very" add 1 point.  (See https://www.maxhuibai.com/blog/a-proposed-procedure-for-testing-the-evidentiary-value-of-responses-from-duplicated-gps-sources-comments-invited)
   
   Max score for only latitude and longitude: 1
-  Max score for latitude, longitude, and one free-response: 3
-  Max score for latitude, longitude, and two free-responses: 5
-  Max score for latitude, longitude, and three free-responses: 7
+  Max score for latitude, longitude, and one free-response: 4
+  Max score for latitude, longitude, and two free-responses: 6
+  Max score for latitude, longitude, and three free-responses: 8
