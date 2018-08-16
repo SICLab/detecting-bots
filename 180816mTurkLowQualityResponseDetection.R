@@ -8,7 +8,6 @@
 # It is best to examine each response with a high score manually. This function cannot replace the human eye- it can only guide it. 
 
 # Function arguments: 
-  # Data - your dataset
   # Latitude - A column with latitude coordinates for your respondant. 
   # Longitude - A column with longitude coordinates for your respondant. 
   # Threshold - If a single latitude/longitude pair exceeds this proportion of the sample, it is suspicious. (Default is .01.)
@@ -27,29 +26,29 @@
     # Max score for latitude, longitude, and three free-responses: 7
 
 
-bot.detector <- function(Data, Latitude, Longitude, Threshold = .1, Comments, Comments2, Comments3){
+bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Comments2, Comments3){
   
   
   # This creates a new column to store our bot suspicion score. 
-    Data[,"bot.susp"] <- NA
+  bot.susp <- rep(NA, length(Latitude))
   
-  # First, let's work on detecting if there are some coordinates that appear in more than 1% of the Dataa. 
-      # With Qualtrics, the columns we want to look at are Latitude and Longitude. 
-      
+  # First, let's work on detecting if there are some coordinates that appear in more than 1% of the a. 
+  # With Qualtrics, the columns we want to look at are Latitude and Longitude. 
+  
       # Creating an object combining those two into one column 
-      latlong <- with(Data, paste(Latitude,Longitude))
+      latlong <- paste(Latitude,Longitude)
       
-      # This counts the number of times each coordinate appears in the Dataaset. 
+      # This counts the number of times each coordinate appears in the aset. 
       llcount <- summary(as.factor(latlong))
       
       # This determines if a certain latitude and longitude appears in more than 1% of responses.
-      lllots <- llcount > nrow(Data) * Threshold # You can change the .01 to change the % of the sample. 
+      lllots <- llcount > length(Latitude) * Threshold # You can change the .01 to change the % of the sample. 
       
       # Pulls out the coordinates that make up more than 1% of the sample.   
       llmany <- names(lllots[lllots == TRUE]) 
       
       # Adds a 1 to the bot suspicion column if the coordinates appear in more than 1% of the sample
-      Data$bot.susp <- ifelse(latlong %in% llmany, 1,  0)
+      bot.susp <- ifelse(latlong %in% llmany, 1,  0)
   
   # Now, let's check if their free response contains "good" or "NICE!"
     suswords <- c("good","NICE!")
@@ -61,10 +60,10 @@ bot.detector <- function(Data, Latitude, Longitude, Threshold = .1, Comments, Co
         
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-        Data$bot.susp <- with(Data, ifelse(Comments %in% suswords, Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        Data$bot.susp <- with(Data, ifelse(duplicated(Comments), Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(duplicated(Comments), bot.susp + 1, bot.susp)
       }
   
   # Check if person specified second free-response. If so, run. 
@@ -74,10 +73,10 @@ bot.detector <- function(Data, Latitude, Longitude, Threshold = .1, Comments, Co
         
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-        Data$bot.susp <- with(Data, ifelse(Comments2 %in% suswords, Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        Data$bot.susp <- with(Data, ifelse(duplicated(Comments2), Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(duplicated(Comments2), bot.susp + 1, bot.susp)
       }
   
   # Check if person specified third free-response. If so, run. 
@@ -87,13 +86,13 @@ bot.detector <- function(Data, Latitude, Longitude, Threshold = .1, Comments, Co
         
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-        Data$bot.susp <- with(Data, ifelse(Comments3 %in% suswords, Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
         
         # Now, check if any free responses are 100% matches to other free responses. 
-        Data$bot.susp <- with(Data, ifelse(duplicated(Comments3), Data$bot.susp + 1, Data$bot.susp))
+        bot.susp <- ifelse(duplicated(Comments3), bot.susp + 1, bot.susp)
       }
   
   # Outputting results
-    return(Data$bot.susp)
+  return(bot.susp)
   
 }
