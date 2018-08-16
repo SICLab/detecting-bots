@@ -7,8 +7,6 @@ Suggestions for new features to add to the function should be emailed to jprims2
 Citation: 
 Prims, J., & Motyl, M. (2018). A tool for detecting low quality data in internet research. GitHub: https://github.com/SICLab/detecting-bots
 
-bot.detector(Latitude, Longitude, Threshold, Comments, Comments2, Comments3)
-
 Files: 
  - Function: 180816mTurkLowQualityResponseDetection.R
  - Example: 180816mTurkLowQualityResponseDetection_Example.R
@@ -16,6 +14,8 @@ Files:
   
 This function assigns a score to each response. The higher the score, the higher the probability that the respondant is a bot or survey-farmer. 
 It is best to examine each response with a high score manually. This function cannot replace the human eye- it can only guide it. 
+
+bot.detector(Latitude, Longitude, Threshold, Comments, Comments2, Comments3)
 
 Function arguments: 
   1. Latitude - A column with latitude coordinates for your respondant. 
