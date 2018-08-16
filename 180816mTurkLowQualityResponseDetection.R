@@ -11,13 +11,14 @@
   # Data - your dataset
   # Latitude - A column with latitude coordinates for your respondant. 
   # Longitude - A column with longitude coordinates for your respondant. 
+  # Threshold - If a single latitude/longitude pair exceeds this proportion of the sample, it is suspicious. (Default is .01.)
   # Comments - An optional free-response field. 
   # Comments2 - A second, optional free-response field. 
   # Comments3 - A third, optional free-response field. 
 
 # Scoring: 
   # Scores can go as high as 7 if you have three free-resposne fields. 
-  # Having a latitude and longitude that appears in more than 1% of responses adds 1 point. (I recommend changing the percentage depending on the size of your dataset.)
+  # Having a latitude and longitude that appears in more than the specified threshold adds 1 point. (Default threshold is .01.)
   # Comments consisting solely of phrases typically attributed to bots/duplicate responses/survey farmers adds 1 point. (Send new suggestions for phrases to jprims2@uic.edu.)
   # Duplicate comments that other respondants have already made in response to the same question add 1 point. 
     # Max score for only latitude and longitude: 1
@@ -26,7 +27,7 @@
     # Max score for latitude, longitude, and three free-responses: 7
 
 
-bot.detector <- function(Data, Latitude, Longitude, Comments, Comments2, Comments3){
+bot.detector <- function(Data, Latitude, Longitude, Threshold = .1, Comments, Comments2, Comments3){
   
   
   # This creates a new column to store our bot suspicion score. 
@@ -42,7 +43,7 @@ bot.detector <- function(Data, Latitude, Longitude, Comments, Comments2, Comment
       llcount <- summary(as.factor(latlong))
       
       # This determines if a certain latitude and longitude appears in more than 1% of responses.
-      lllots <- llcount > nrow(Data) * .01 # You can change the .01 to change the % of the sample. 
+      lllots <- llcount > nrow(Data) * Threshold # You can change the .01 to change the % of the sample. 
       
       # Pulls out the coordinates that make up more than 1% of the sample.   
       llmany <- names(lllots[lllots == TRUE]) 
