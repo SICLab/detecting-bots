@@ -19,10 +19,11 @@
   # Having a latitude and longitude that appears in more than the specified threshold adds 1 point. (Default threshold is .01.)
   # Comments consisting solely of phrases typically attributed to bots/duplicate responses/survey farmers adds 1 point. (Send new suggestions for phrases to jprims2@uic.edu.)
   # Duplicate comments that other respondants have already made in response to the same question add 1 point. 
-  # Max score for only latitude and longitude: 1
-  # Max score for latitude, longitude, and one free-response: 4
-  # Max score for latitude, longitude, and two free-responses: 6
-  # Max score for latitude, longitude, and three free-responses: 8
+  # Comments containing the word "very" add 1 point.
+    # Max score for only latitude and longitude: 1
+    # Max score for latitude, longitude, and one free-response: 3
+    # Max score for latitude, longitude, and two free-responses: 5
+    # Max score for latitude, longitude, and three free-responses: 7
 
 # Creating a dataset with suspected bots. 
   LocationLatitude <- c(1:100, 10, 10)
