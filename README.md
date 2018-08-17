@@ -33,6 +33,6 @@ Scoring:
   - Comments containing the word "very" add 1 point.  (See https://www.maxhuibai.com/blog/a-proposed-procedure-for-testing-the-evidentiary-value-of-responses-from-duplicated-gps-sources-comments-invited)
   
  - Max score for only latitude and longitude: 1
- - Max score for latitude, longitude, and one free-response: 4
- - Max score for latitude, longitude, and two free-responses: 6
- - Max score for latitude, longitude, and three free-responses: 8
+ - Max score for latitude, longitude, and one free-response: 3
+ - Max score for latitude, longitude, and two free-responses: 5
+ - Max score for latitude, longitude, and three free-responses: 7
