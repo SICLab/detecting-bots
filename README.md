@@ -1,18 +1,18 @@
 # bot.detector() Version 1.2
 This is a function designed for Qualtrics surveys to detect responses that may be from bots and survey-farmers.
-This function creates a vector that you can save as a new column in your dataset that assignes a "score" to each response. 
+This function creates a vector that you can save as a new column in your dataset that assigns a "score" to each response. 
 The score is intended to count the number of features in each response that are associated with bots and survey-farmers. 
 Suggestions for new features to add to the function should be emailed to jprims2@uic.edu.
 
-Citation: 
+Suggested Citation: 
 Prims, J., & Motyl, M. (2018). A tool for detecting low quality data in internet research. GitHub: https://github.com/SICLab/detecting-bots
 
 Files: 
  - Function: 180816mTurkLowQualityResponseDetection.R
  - Example: 180816mTurkLowQualityResponseDetection_Example.R
  - Load function from GitHub: HowToLoadBotDetector.R
-  
-This function assigns a score to each response. The higher the score, the higher the probability that the respondant is a bot or survey-farmer. 
+ 
+This function assigns a score to each response. The higher the score, the more features associated with bots or survey-farmers. 
 It is best to examine each response with a high score manually. This function cannot replace the human eye- it can only guide it. 
 
 bot.detector(Latitude, Longitude, Threshold, Comments, Comments2, Comments3)
