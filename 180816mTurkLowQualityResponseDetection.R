@@ -16,7 +16,7 @@
   # Comments3 - A third, optional free-response field. 
 
 # Scoring: 
-  # Scores can go as high as 7 if you have three free-resposne fields. 
+  # Scores can go as high as 7 if you have three free-response fields. 
   # Having a latitude and longitude that appears in more than the specified threshold adds 1 point. (Default threshold is .01.)
   # Comments consisting solely of phrases typically attributed to bots/duplicate responses/survey farmers adds 1 point. (Send new suggestions for phrases to jprims2@uic.edu.)
   # Duplicate comments that other respondants have already made in response to the same question add 1 point. 
