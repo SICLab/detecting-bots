@@ -50,8 +50,16 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
       # Adds a 1 to the bot suspicion column if the coordinates appear in more than 1% of the sample
       bot.susp <- ifelse(latlong %in% llmany, 1,  0)
   
-  # Now, let's check if their free response consists only of "good" or "NICE!"
-    suswords <- c("good","NICE!", "very")
+  # Now, let's check if their free response consists of phrases typically attributed to bots/duplicate responses/survey farmers
+    suswords <- c("good", "NICE!", "very")
+  
+  # Transform vector of phrases to lowercase
+    suswords <- tolower(suswords) # See https://www.maxhuibai.com/blog/evidence-that-responses-from-repeating-gps-are-random for illustration
+  
+  # Transform comment vectors to lowercase
+    Comments <- tolower(Comments)
+    Comments2 <- tolower(Comments2)
+    Comments3 <- tolower(Comments3)
   
   # Check if person specified a free-response. If so, run. 
       if(missing(Comments)) {
