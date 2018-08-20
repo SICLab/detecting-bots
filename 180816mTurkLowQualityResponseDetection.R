@@ -56,10 +56,6 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
   # Transform vector of phrases to lowercase
     suswords <- tolower(suswords) # See https://www.maxhuibai.com/blog/evidence-that-responses-from-repeating-gps-are-random for illustration
   
-  # Transform comment vectors to lowercase
-    Comments <- tolower(Comments)
-    Comments2 <- tolower(Comments2)
-    Comments3 <- tolower(Comments3)
   
   # Check if person specified a free-response. If so, run. 
       if(missing(Comments)) {
@@ -67,6 +63,9 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
       } else {
         
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
+        
+          # Transform comment vectors to lowercase
+           Comments <- tolower(Comments)
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
         bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
         
@@ -83,6 +82,8 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
         NULL
       } else {
         
+          # Transform comment vectors to lowercase
+    Comments2 <- tolower(Comments2)
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
         bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
@@ -99,7 +100,8 @@ bot.detector <- function(Latitude, Longitude,  Threshold = .01, Comments, Commen
       if(missing(Comments3)) {
         NULL
       } else {
-        
+          # Transform comment vectors to lowercase
+    Comments3 <- tolower(Comments3)
         # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
         # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
         bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
