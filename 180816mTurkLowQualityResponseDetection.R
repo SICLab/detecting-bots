@@ -33,140 +33,142 @@
 
 # Loading in the function
   
-  bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, Comments2, Comments3){
+bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, Comments2, Comments3){
+  
+  # This loads in required packages. (Mostly for the Time argument.)
+  require(tidyr)
+  require(dplyr)
+  require(zoo)
+  
+  
+  # This creates a new column to store our bot suspicion score. 
+  bot.susp <- rep(0, length(Latitude))
+  
+  # First, let's work on detecting if there are some coordinates that appear in more than 1% of the a. 
+  # With Qualtrics, the columns we want to look at are Latitude and Longitude. 
+  
+  # Creating an object combining those two into one column 
+  latlong <- paste(Latitude,Longitude)
+  
+  # This counts the number of times each coordinate appears in the aset. 
+  llcount <- summary(as.factor(latlong))
+  
+  # This determines if a certain latitude and longitude appears in more than 1% of responses.
+  lllots <- llcount > length(Latitude) * Threshold # You can change the .01 to change the % of the sample. 
+  
+  # Pulls out the coordinates that make up more than 1% of the sample.   
+  llmany <- names(lllots[lllots == TRUE]) 
+  
+  # Adds a 1 to the bot suspicion column if the coordinates appear in more than 1% of the sample
+  bot.susp <- ifelse(latlong %in% llmany, 1,  0)
+  
+  # Now, let's check if their free response contains "good" or "NICE!"
+  suswords <- c("good","NICE!")
+  
+  # Transform vector of phrases to lowercase
+  suswords <- tolower(suswords) # See https://www.maxhuibai.com/blog/evidence-that-responses-from-repeating-gps-are-random for illustration
+  
+  
+  # Check if person specified a column of times. If so, run.
+  if(missing(Time)) {
+    NULL
+  } else {
+    # First, converting time to a format R can use. Using the typical Qualtrics organization.
+    Time <- as.POSIXct(Time, tz = "", format = "%m/%d/%Y %H:%M", optional = FALSE)
+    Time <- as.numeric(Time)
     
-    # This loads in required packages. (Mostly for the Time argument.)
-    require(tidyr)
-    require(dplyr)
-    require(zoo)
+    # I'd like to make a dataframe so I can filter things.
+    tempdat <- data.frame(latlong, Time)
+    # Now, adding an ID
+    tempdat$id <- 1:(nrow(tempdat))
     
+    # This filters it so the dataframe only keeps rows with suspicious coordinates, and moves it to long format.
+    tempdatw <- spread(subset(tempdat, tempdat$latlong %in% llmany), latlong, Time)
     
-    # This creates a new column to store our bot suspicion score. 
-    bot.susp <- rep(NA, length(Latitude))
+    # Fill in NAs with 0s
+    tempdatw[is.na(tempdatw)] <- 0
     
-    # First, let's work on detecting if there are some coordinates that appear in more than 1% of the a. 
-    # With Qualtrics, the columns we want to look at are Latitude and Longitude. 
+    # Check if time difference between a duplicate and the previous duplicate response is between 1 and 600 seconds (10 minutes)
+    # Code for 1 duplicate and more duplicates
+    ifelse(ncol(tempdatw) == 2,
+           # If one repeating coordinate
+           ifelse(abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) < 600 & abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) > 1, TRUE, FALSE),
+           # If multiple coordinates
+           tempdatw[,-1] <- lapply(tempdatw[,-1], function(x) ifelse(abs(x - lag(x, n = 1L)) < 600 & abs(x - lag(x, n = 1L)) > 1, TRUE, FALSE))
+    )
     
-    # Creating an object combining those two into one column 
-    latlong <- paste(Latitude,Longitude)
+    # I think I need to sum the two columns into one. 
+    ifelse(ncol(tempdatw) == 2, 
+           tempdatw$sum <- tempdatw[,2],
+           tempdatw$sum <- rowSums(tempdatw[,-1]))
     
-    # This counts the number of times each coordinate appears in the aset. 
-    llcount <- summary(as.factor(latlong))
+    # Putting it back in long format, so I can merge it back in with our temporary data frame
+    # TEMPDAT L IS LISTING SOME IDS TWICE 
+    tempdatl <- tempdatw[,c("id","sum")]
     
-    # This determines if a certain latitude and longitude appears in more than 1% of responses.
-    lllots <- llcount > length(Latitude) * Threshold # You can change the .01 to change the % of the sample. 
+    # Merge back in to tempdat
     
-    # Pulls out the coordinates that make up more than 1% of the sample.   
-    llmany <- names(lllots[lllots == TRUE]) 
+    findat <- merge(tempdat, tempdatl[,c("id","sum")], by = "id", all.x = TRUE)
     
-    # Adds a 1 to the bot suspicion column if the coordinates appear in more than 1% of the sample
-    bot.susp <- ifelse(latlong %in% llmany, 1,  0)
-    
-    # Now, let's check if their free response contains "good" or "NICE!"
-    suswords <- c("good","NICE!")
-    
-    # Transform vector of phrases to lowercase
-    suswords <- tolower(suswords) # See https://www.maxhuibai.com/blog/evidence-that-responses-from-repeating-gps-are-random for illustration
-    
-    
-    # Check if person specified a column of times. If so, run.
-    if(missing(Time)) {
-      NULL
-    } else {
-        # First, converting time to a format R can use. Using the typical Qualtrics organization.
-        Time <- as.POSIXct(Time, tz = "", format = "%m/%d/%Y %H:%M", optional = FALSE)
-        Time <- as.numeric(Time)
-
-        # I'd like to make a dataframe so I can filter things.
-        tempdat <- data.frame(latlong, Time)
-        # Now, adding an ID
-        tempdat$id <- 1:(nrow(tempdat))
-
-        # This filters it so the dataframe only keeps rows with suspicious coordinates, and moves it to long format.
-        tempdatw <- spread(subset(tempdat, tempdat$latlong %in% llmany), latlong, Time)
-
-        # Fill in NAs with 0s
-        tempdatw[is.na(tempdatw)] <- 0
-
-        # Check if time difference between a duplicate and the previous duplicate response is between 1 and 600 seconds (10 minutes)
-          # Code for 1 duplicate and more duplicates
-        ifelse(ncol(tempdatw) == 2,
-               # If one repeating coordinate
-               ifelse(abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) < 600 & abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) > 1, TRUE, FALSE),
-               # If multiple coordinates
-               tempdatw[,-1] <- lapply(tempdatw[,-1], function(x) ifelse(abs(x - lag(x, n = 1L)) < 600 & abs(x - lag(x, n = 1L)) > 1, TRUE, FALSE))
-        )
-        
-        # I think I need to sum the two columns into one. 
-        tempdatw$sum <- rowSums(tempdatw[,-1])
-        
-        # Putting it back in long format, so I can merge it back in with our temporary data frame
-        # TEMPDAT L IS LISTING SOME IDS TWICE 
-        tempdatl <- tempdatw[,c("id","sum")]
-        
-        # Merge back in to tempdat
- 
-        findat <- merge(tempdat, tempdatl[,c("id","sum")], by = "id", all.x = TRUE)
-        
-        findat$sum <- ifelse(is.na(findat$sum), 0, findat$sum)
-
-
-        # Now, let's add that suspicion!
-
-        bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) # For some reason, it's not adding. 
-     }
+    findat$sum <- ifelse(is.na(findat$sum), 0, findat$sum)
     
     
-    # Check if person specified a free-response. If so, run. 
-    if(missing(Comments)) {
-      NULL
-    } else {
-      
-      # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
-      
-      # Transform comment vectors to lowercase
-      Comments <- tolower(Comments)
-      
-      # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-      bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
-      
-      # Now, check if any free responses are 100% matches to other free responses. 
-      bot.susp <- ifelse(duplicated(Comments), bot.susp + 1, bot.susp)
-    }
+    # Now, let's add that suspicion!
     
-    # Check if person specified second free-response. If so, run. 
-    if(missing(Comments2)) {
-      NULL
-    } else {
-      # Transform comment vectors to lowercase
-      Comments2 <- tolower(Comments2)
-
-      # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
-      # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-      bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
-      
-      # Now, check if any free responses are 100% matches to other free responses. 
-      bot.susp <- ifelse(duplicated(Comments2), bot.susp + 1, bot.susp)
-    }
-    
-    # Check if person specified third free-response. If so, run. 
-    if(missing(Comments3)) {
-      NULL
-    } else {
-      
-      # Transform comment vectors to lowercase
-      Comments3 <- tolower(Comments3)
-      
-      # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
-      # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
-      bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
-      
-      # Now, check if any free responses are 100% matches to other free responses. 
-      bot.susp <- ifelse(duplicated(Comments3), bot.susp + 1, bot.susp)
-    }
-    
-    # Outputting results
-    return(bot.susp)
-
+    bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) # For some reason, it's not adding. 
   }
+  
+  
+  # Check if person specified a free-response. If so, run. 
+  if(missing(Comments)) {
+    NULL
+  } else {
+    
+    # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
+    
+    # Transform comment vectors to lowercase
+    Comments <- tolower(Comments)
+    
+    # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
+    bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
+    
+    # Now, check if any free responses are 100% matches to other free responses. 
+    bot.susp <- ifelse(duplicated(Comments), bot.susp + 1, bot.susp)
+  }
+  
+  # Check if person specified second free-response. If so, run. 
+  if(missing(Comments2)) {
+    NULL
+  } else {
+    # Transform comment vectors to lowercase
+    Comments2 <- tolower(Comments2)
+    
+    # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
+    # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
+    bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
+    
+    # Now, check if any free responses are 100% matches to other free responses. 
+    bot.susp <- ifelse(duplicated(Comments2), bot.susp + 1, bot.susp)
+  }
+  
+  # Check if person specified third free-response. If so, run. 
+  if(missing(Comments3)) {
+    NULL
+  } else {
+    
+    # Transform comment vectors to lowercase
+    Comments3 <- tolower(Comments3)
+    
+    # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
+    # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
+    bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
+    
+    # Now, check if any free responses are 100% matches to other free responses. 
+    bot.susp <- ifelse(duplicated(Comments3), bot.susp + 1, bot.susp)
+  }
+  
+  # Outputting results
+  return(bot.susp)
+  
+}
 

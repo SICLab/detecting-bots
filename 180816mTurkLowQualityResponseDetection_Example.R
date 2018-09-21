@@ -52,7 +52,7 @@
     
     
     # This creates a new column to store our bot suspicion score. 
-    bot.susp <- rep(NA, length(Latitude))
+    bot.susp <- rep(0, length(Latitude))
     
     # First, let's work on detecting if there are some coordinates that appear in more than 1% of the a. 
     # With Qualtrics, the columns we want to look at are Latitude and Longitude. 
@@ -83,48 +83,50 @@
     if(missing(Time)) {
       NULL
     } else {
-        # First, converting time to a format R can use. Using the typical Qualtrics organization.
-        Time <- as.POSIXct(Time, tz = "", format = "%m/%d/%Y %H:%M", optional = FALSE)
-        Time <- as.numeric(Time)
-
-        # I'd like to make a dataframe so I can filter things.
-        tempdat <- data.frame(latlong, Time)
-        # Now, adding an ID
-        tempdat$id <- 1:(nrow(tempdat))
-
-        # This filters it so the dataframe only keeps rows with suspicious coordinates, and moves it to long format.
-        tempdatw <- spread(subset(tempdat, tempdat$latlong %in% llmany), latlong, Time)
-
-        # Fill in NAs with 0s
-        tempdatw[is.na(tempdatw)] <- 0
-
-        # Check if time difference between a duplicate and the previous duplicate response is between 1 and 600 seconds (10 minutes)
-          # Code for 1 duplicate and more duplicates
-        ifelse(ncol(tempdatw) == 2,
-               # If one repeating coordinate
-               ifelse(abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) < 600 & abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) > 1, TRUE, FALSE),
-               # If multiple coordinates
-               tempdatw[,-1] <- lapply(tempdatw[,-1], function(x) ifelse(abs(x - lag(x, n = 1L)) < 600 & abs(x - lag(x, n = 1L)) > 1, TRUE, FALSE))
-        )
-        
-        # I think I need to sum the two columns into one. 
-        tempdatw$sum <- rowSums(tempdatw[,-1])
-        
-        # Putting it back in long format, so I can merge it back in with our temporary data frame
-        # TEMPDAT L IS LISTING SOME IDS TWICE 
-        tempdatl <- tempdatw[,c("id","sum")]
-        
-        # Merge back in to tempdat
- 
-        findat <- merge(tempdat, tempdatl[,c("id","sum")], by = "id", all.x = TRUE)
-        
-        findat$sum <- ifelse(is.na(findat$sum), 0, findat$sum)
-
-
-        # Now, let's add that suspicion!
-
-        bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) # For some reason, it's not adding. 
-     }
+      # First, converting time to a format R can use. Using the typical Qualtrics organization.
+      Time <- as.POSIXct(Time, tz = "", format = "%m/%d/%Y %H:%M", optional = FALSE)
+      Time <- as.numeric(Time)
+      
+      # I'd like to make a dataframe so I can filter things.
+      tempdat <- data.frame(latlong, Time)
+      # Now, adding an ID
+      tempdat$id <- 1:(nrow(tempdat))
+      
+      # This filters it so the dataframe only keeps rows with suspicious coordinates, and moves it to long format.
+      tempdatw <- spread(subset(tempdat, tempdat$latlong %in% llmany), latlong, Time)
+      
+      # Fill in NAs with 0s
+      tempdatw[is.na(tempdatw)] <- 0
+      
+      # Check if time difference between a duplicate and the previous duplicate response is between 1 and 600 seconds (10 minutes)
+      # Code for 1 duplicate and more duplicates
+      ifelse(ncol(tempdatw) == 2,
+             # If one repeating coordinate
+             ifelse(abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) < 600 & abs(tempdatw[,2] - lag(tempdatw[,2], n = 1L)) > 1, TRUE, FALSE),
+             # If multiple coordinates
+             tempdatw[,-1] <- lapply(tempdatw[,-1], function(x) ifelse(abs(x - lag(x, n = 1L)) < 600 & abs(x - lag(x, n = 1L)) > 1, TRUE, FALSE))
+      )
+      
+      # I think I need to sum the two columns into one. 
+      ifelse(ncol(tempdatw) == 2, 
+             tempdatw$sum <- tempdatw[,2],
+             tempdatw$sum <- rowSums(tempdatw[,-1]))
+      
+      # Putting it back in long format, so I can merge it back in with our temporary data frame
+      # TEMPDAT L IS LISTING SOME IDS TWICE 
+      tempdatl <- tempdatw[,c("id","sum")]
+      
+      # Merge back in to tempdat
+      
+      findat <- merge(tempdat, tempdatl[,c("id","sum")], by = "id", all.x = TRUE)
+      
+      findat$sum <- ifelse(is.na(findat$sum), 0, findat$sum)
+      
+      
+      # Now, let's add that suspicion!
+      
+      bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) # For some reason, it's not adding. 
+    }
     
     
     # Check if person specified a free-response. If so, run. 
@@ -150,7 +152,7 @@
     } else {
       # Transform comment vectors to lowercase
       Comments2 <- tolower(Comments2)
-
+      
       # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
       # Putting the arguments in this order makes sure it won't flag comments that contain the word "good," but also have other content.
       bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
@@ -177,7 +179,7 @@
     
     # Outputting results
     return(bot.susp)
-
+    
   }
 
 
