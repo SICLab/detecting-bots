@@ -143,7 +143,7 @@
       bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
       
       # Now, check if any free responses are 100% matches to other free responses. 
-      bot.susp <- ifelse(duplicated(Comments), bot.susp + 1, bot.susp)
+      bot.susp <- ifelse(duplicated(Comments, incomparables=c('',NA)), bot.susp + 1, bot.susp)
     }
     
     # Check if person specified second free-response. If so, run. 
@@ -181,6 +181,7 @@
     return(bot.susp)
     
   }
+  
 
 
 # Testing the function
