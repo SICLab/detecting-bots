@@ -6,7 +6,7 @@ We recommend that you examine responses with high scores manually before excludi
 Suggestions for new features to add to the function should be emailed to jprims2@uic.edu
 
 Suggested Citation: 
-Prims, J., & Motyl, M. (2018). A tool for detecting low quality data in internet research. GitHub: https://github.com/SICLab/detecting-bots
+Prims, J. (2018). A tool for detecting low quality data in internet research. GitHub: https://github.com/SICLab/detecting-bots
 
 Files: 
  - Function: 180816mTurkLowQualityResponseDetection.R
