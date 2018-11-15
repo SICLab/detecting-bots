@@ -103,7 +103,6 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
            tempdatw$sum <- rowSums(tempdatw[,-1]))
     
     # Putting it back in long format, so I can merge it back in with our temporary data frame
-    # TEMPDAT L IS LISTING SOME IDS TWICE 
     tempdatl <- tempdatw[,c("id","sum")]
     
     # Merge back in to tempdat
@@ -115,7 +114,7 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     
     # Now, let's add that suspicion!
     
-    bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) # For some reason, it's not adding. 
+    bot.susp <- ifelse(findat$sum >= 1, bot.susp + 1, bot.susp) 
   }
   
   
@@ -133,7 +132,7 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     bot.susp <- ifelse(Comments %in% suswords, bot.susp + 1, bot.susp)
     
     # Now, check if any free responses are 100% matches to other free responses. 
-    bot.susp <- ifelse(duplicated(Comments, incomparables=c('',NA)), bot.susp + 1, bot.susp)
+    bot.susp <- ifelse(Comments%in%Comments[which(duplicated(Comments, incomparables = c('',NA)))], bot.susp + 1, bot.susp)
   }
   
   # Check if person specified second free-response. If so, run. 
@@ -148,7 +147,7 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     bot.susp <- ifelse(Comments2 %in% suswords, bot.susp + 1, bot.susp)
     
     # Now, check if any free responses are 100% matches to other free responses. 
-    bot.susp <- ifelse(duplicated(Comments2), bot.susp + 1, bot.susp)
+    bot.susp <- ifelse(Comments2%in%Comments2[which(duplicated(Comments2, incomparables = c('',NA)))], bot.susp + 1, bot.susp)
   }
   
   # Check if person specified third free-response. If so, run. 
@@ -164,7 +163,7 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     bot.susp <- ifelse(Comments3 %in% suswords, bot.susp + 1, bot.susp)
     
     # Now, check if any free responses are 100% matches to other free responses. 
-    bot.susp <- ifelse(duplicated(Comments3), bot.susp + 1, bot.susp)
+    bot.susp <- ifelse(Comments3%in%Comments3[which(duplicated(Comments3, incomparables = c('',NA)))], bot.susp + 1, bot.susp)
   }
   
   # Outputting results
