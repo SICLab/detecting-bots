@@ -125,6 +125,9 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     
     # Adds 1 to the bot suspicion column if suspicous phrases appear in the responses.
     
+    # Encoding
+    Comments <- enc2utf8(as.character(Comments))
+    
     # Transform comment vectors to lowercase
     Comments <- tolower(Comments)
     
@@ -139,6 +142,9 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
   if(missing(Comments2)) {
     NULL
   } else {
+    # Encoding
+    Comments2 <- enc2utf8(as.character(Comments2))
+    
     # Transform comment vectors to lowercase
     Comments2 <- tolower(Comments2)
     
@@ -155,6 +161,9 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
     NULL
   } else {
     
+    # Encoding
+    Comments3 <- enc2utf8(as.character(Comments3))
+    
     # Transform comment vectors to lowercase
     Comments3 <- tolower(Comments3)
     
@@ -170,5 +179,6 @@ bot.detector <- function(Latitude, Longitude, Time,  Threshold = .01, Comments, 
   return(bot.susp)
   
 }
+
 
 
